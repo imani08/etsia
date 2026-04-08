@@ -3,6 +3,9 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import prisma from "./config/prisma.js";
+import authRoutes from "./modules/auth/auth.routes.js";
+
+
 
 const app = express();
 
@@ -11,6 +14,8 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.use("/api/auth", authRoutes);
 
 // Route de base
 app.get("/", (req, res) => {

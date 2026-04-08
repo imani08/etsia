@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Roles utilisateurs
 enum Role {
   SUPER_ADMIN
   ADMIN
@@ -15,7 +14,6 @@ enum Role {
   CLIENT
 }
 
-// Statut du chauffeur
 enum DriverStatus {
   PENDING
   APPROVED
@@ -23,23 +21,24 @@ enum DriverStatus {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  firebaseUid String   @unique
-  email       String   @unique
-  name        String
-  role        Role     @default(CLIENT)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  password      String
+  role          Role     @default(CLIENT)
 
-  // Relation avec Driver
-  driver Driver?
+  refreshToken  String?
 
-  // Relations avec Review et Report
-  reviews Review[]
-  reports Report[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  // Relation avec les Drivers qu'un admin a validé
+  driver        Driver?
+  reviews       Review[]
+  reports       Report[]
+
   driversValidated Driver[] @relation("AdminValidation")
+
+  @@index([email])
 }
 
 model Driver {
@@ -51,7 +50,6 @@ model Driver {
   status        DriverStatus @default(PENDING)
   validatedById String?
 
-  // Relations
   user        User  @relation(fields: [userId], references: [id])
   validatedBy User? @relation("AdminValidation", fields: [validatedById], references: [id])
 
@@ -59,6 +57,8 @@ model Driver {
   reports Report[]
 
   createdAt DateTime @default(now())
+
+  @@index([status])
 }
 
 model Community {
@@ -66,6 +66,8 @@ model Community {
   name      String
   city      String
   createdAt DateTime @default(now())
+
+  @@index([city])
 }
 
 model Review {
@@ -81,6 +83,7 @@ model Review {
   createdAt DateTime @default(now())
 
   @@index([driverId])
+  @@index([userId])
 }
 
 model Report {
@@ -95,4 +98,5 @@ model Report {
   createdAt DateTime @default(now())
 
   @@index([driverId])
+  @@index([userId])
 }
