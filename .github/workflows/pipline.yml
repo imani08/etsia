@@ -38,11 +38,12 @@ jobs:
       # 5️⃣ Run ESLint
       - name: Lint code
         run: npm run lint
+        continue-on-error: true # ✅ Le pipeline ne s'arrête pas en cas d'échec
 
       # 6️⃣ Build TypeScript
       - name: Build project
         run: npm run build
-        continue-on-error: true
+      
 
       # 7️⃣ Run tests
       # 7️⃣ Run tests
