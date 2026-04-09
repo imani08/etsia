@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 export const createDriverProfile = async (data: any) => {
   return await prisma.driver.create({
@@ -17,5 +17,15 @@ export const updateUserInfo = async (userId: string, phone: string) => {
   return await prisma.user.update({
     where: { id: userId },
     data: { phone }
+  });
+};
+
+export const updateDriverStatus = async (driverId: string, status: 'APPROVED' | 'REJECTED', adminId: string) => {
+  return await prisma.driver.update({
+    where: { id: driverId },
+    data: { 
+      status: status,
+      validatedById: adminId 
+    }
   });
 };
