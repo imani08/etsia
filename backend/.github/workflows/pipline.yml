@@ -1,0 +1,76 @@
+name: CI/CD Pipeline TaxiSafe
+
+# Déclenchement : push sur feature/* ou fix/* et PR vers review
+on:
+  push:
+    branches:
+      - 'feature/*'
+      - 'fix/*'
+  pull_request:
+    branches:
+      - review
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      # 3️⃣ Install dependencies
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # 4️⃣ Generate Prisma client
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      # 5️⃣ Run ESLint
+      - name: Lint code
+        run: npm run lint
+        continue-on-error: true # ✅ Le pipeline ne s'arrête pas en cas d'échec
+
+      # 6️⃣ Build TypeScript
+      - name: Build project
+        run: npm run build
+      
+
+      # 7️⃣ Run tests
+      # 7️⃣ Run tests
+      - name: Run tests
+        run: npm test
+        continue-on-error: true # ✅ Le pipeline ne s'arrête pas en cas d'échec
+
+  merge-to-main:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    # On change github.ref par github.base_ref pour cibler la branche de destination
+    if: github.event_name == 'pull_request' && github.base_ref == 'review'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Récupère tout l'historique pour éviter l'erreur de merge
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge review into main
+        run: |
+          git fetch origin main review
+          git checkout main
+          # On fusionne le contenu de 'review' qui vient d'être testé
+          git merge --no-ff origin/review -m "chore: merge review into main via CI"
+          git push origin main

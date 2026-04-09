@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  DRIVER
+  CLIENT
+}
+
+enum DriverStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  name             String
+  phone            String?  @unique // Ajouté : pour l'inscription chauffeur
+  password         String
+  role             Role     @default(CLIENT)
+  refreshToken     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  driver           Driver?
+  reviews          Review[]
+  reports          Report[]
+  driversValidated Driver[] @relation("AdminValidation")
+
+  @@index([email])
+}
+
+model Driver {
+  id             String       @id @default(uuid())
+  userId         String       @unique
+  licenseNumber  String       @unique // Ajouté : un chauffeur doit avoir un permis unique
+  
+  // Précision des infos véhicule pour l'endpoint
+  vehicleType    String       // Ajouté : type de véhicule (ex: berline, break)
+  plateNumber    String       @unique // Ajouté : plaque d'immatriculation unique
+  
+  qrCode         String?
+  status         DriverStatus @default(PENDING)
+  validatedById  String?
+
+  user           User         @relation(fields: [userId], references: [id])
+  validatedBy    User?        @relation("AdminValidation", fields: [validatedById], references: [id])
+
+  reviews        Review[]
+  reports        Report[]
+
+  createdAt      DateTime     @default(now())
+
+  @@index([status])
+  @@index([plateNumber]) // Ajouté : recherche rapide par plaque
+}
+
+model Community {
+  id        String   @id @default(uuid())
+  name      String
+  city      String
+  createdAt DateTime @default(now())
+
+  @@index([city])
+}
+
+model Review {
+  id       String  @id @default(uuid())
+  rating   Int
+  comment  String?
+  userId   String
+  driverId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([driverId])
+  @@index([userId])
+}
+
+model Report {
+  id       String @id @default(uuid())
+  reason   String
+  userId   String
+  driverId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([driverId])
+  @@index([userId])
+}
