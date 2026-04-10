@@ -36,7 +36,7 @@ export const getPublicDriverProfile = async (driverId: string) => {
     select: {
       vehicleType: true,
       plateNumber: true,
-      // On récupère uniquement le nom de l'utilisateur lié
+      
       user: {
         select: {
           name: true

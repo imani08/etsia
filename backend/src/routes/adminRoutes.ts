@@ -1,20 +1,18 @@
 import { Router } from 'express';
-import { scanDriver } from '../controllers/driverController';
 import { authenticateJWT } from '../middlewares/auth.middleware';
 import { authorize } from '../middlewares/role.middleware';
 
 const router = Router();
 
-// Endpoint pour approuver un chauffeur
-// Seuls ADMIN et SUPER_ADMIN y ont accès
-router.patch(
-  '/drivers/:id/approve',
+// Admin routes will be defined here
+// Example protected route for admins only
+router.get(
+  '/dashboard',
   authenticateJWT,
   authorize(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
-    
+    res.json({ message: 'Admin dashboard' });
   }
 );
-router.get('/scan/:id', authenticateJWT, scanDriver);
 
 export default router;

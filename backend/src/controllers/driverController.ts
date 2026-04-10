@@ -34,7 +34,7 @@ export const registerDriver = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    // Gestion des erreurs d'unicité (P2002) pour la plaque ou le permis
+    
     if (error.code === 'P2002') {
       return res.status(400).json({ error: "Le numéro de permis ou la plaque existe déjà." });
     }

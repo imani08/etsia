@@ -72,7 +72,7 @@ model Community {
   name      String
   city      String
   createdAt DateTime @default(now())
-
+  drivers   Driver[]
   @@index([city])
 }
 
