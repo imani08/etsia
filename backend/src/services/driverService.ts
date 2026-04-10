@@ -7,3 +7,14 @@ export const registerNewDriver = async (driverData: any) => {
   // 2. Créer le profil chauffeur
   return await driverRepo.createDriverProfile(driverData);
 };
+
+export const getDriverForScan = async (driverId: string) => {
+  const driver = await driverRepo.getPublicDriverProfile(driverId);
+  
+  if (!driver) {
+    throw new Error("Chauffeur non trouvé");
+  }
+  
+  return driver;
+};
+

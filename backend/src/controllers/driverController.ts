@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-
+import * as driverService from '../services/driverService';
 const prisma = new PrismaClient();
-
+const id = req.params.id as string;
 export const registerDriver = async (req: Request, res: Response) => {
   try {
     const { userId, name, email, phone, licenseNumber, vehicleType, plateNumber } = req.body;
@@ -39,5 +39,21 @@ export const registerDriver = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Le numéro de permis ou la plaque existe déjà." });
     }
     return res.status(500).json({ error: "Erreur lors de l'inscription." });
+  }
+};
+
+export const scanDriver = async (req: Request, res: Response) => {
+  try {
+    // On force le type en string pour lever l'ambiguïté
+    const id = req.params.id as string; 
+
+    if (!id) {
+      return res.status(400).json({ error: "ID invalide" });
+    }
+
+    const driverData = await driverService.getDriverForScan(id);
+    return res.status(200).json(driverData);
+  } catch (error: any) {
+    return res.status(404).json({ error: error.message });
   }
 };

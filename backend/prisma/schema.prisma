@@ -46,7 +46,7 @@ model Driver {
   id             String       @id @default(uuid())
   userId         String       @unique
   licenseNumber  String       @unique // Ajouté : un chauffeur doit avoir un permis unique
-  
+  reviews Review[]
   // Précision des infos véhicule pour l'endpoint
   vehicleType    String       // Ajouté : type de véhicule (ex: berline, break)
   plateNumber    String       @unique // Ajouté : plaque d'immatriculation unique
@@ -82,6 +82,7 @@ model Review {
   comment  String?
   userId   String
   driverId String
+  reviews Review[]
 
   user   User   @relation(fields: [userId], references: [id])
   driver Driver @relation(fields: [driverId], references: [id])

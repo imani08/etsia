@@ -29,3 +29,19 @@ export const updateDriverStatus = async (driverId: string, status: 'APPROVED' | 
     }
   });
 };
+
+export const getPublicDriverProfile = async (driverId: string) => {
+  return await prisma.driver.findUnique({
+    where: { id: driverId },
+    select: {
+      vehicleType: true,
+      plateNumber: true,
+      // On récupère uniquement le nom de l'utilisateur lié
+      user: {
+        select: {
+          name: true
+        }
+      }
+    }
+  });
+};

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { scanDriver } from '../controllers/driverController';
 import { authenticateJWT } from '../middlewares/auth.middleware';
 import { authorize } from '../middlewares/role.middleware';
 
@@ -14,3 +15,4 @@ router.patch(
     
   }
 );
+router.get('/scan/:id', authenticateJWT, scanDriver);
