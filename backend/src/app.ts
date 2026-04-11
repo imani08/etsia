@@ -5,8 +5,17 @@ import morgan from "morgan";
 import prisma from "./config/prisma.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import driverRoutes from "./routes/driverRoutes"; 
-import adminRoutes from "./routes/adminRoutes";
 import { errorMiddleware } from './middlewares/error.middleware';
+import qrRoutes from "./modules/qr/qr.routes";
+import reportRoutes from "./modules/report/report.routes";
+import dashboardRoutes from "./modules/dashboard/dashboard.routes";
+import adminRoutes from "./modules/admin/admin.routes";
+import superAdminRoutes from "./modules/superadmin/superadmin.routes";
+
+
+
+
+
 
 const app = express();
 
@@ -15,6 +24,10 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(morgan("dev"));
+app.use("/api/qr", qrRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/superadmin", superAdminRoutes);
 
 // Routes
 app.use('/api/drivers', driverRoutes);
