@@ -1,59 +1,81 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import * as driverService from '../services/driverService';
+import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
+import * as driverService from "../services/driverService";
+
 const prisma = new PrismaClient();
-const id = req.params.id as string;
+
+/**
+ * 🔥 INSCRIPTION CHAUFFEUR
+ */
 export const registerDriver = async (req: Request, res: Response) => {
   try {
-    const { userId, name, email, phone, licenseNumber, vehicleType, plateNumber } = req.body;
+    const {
+      userId,
+      name,
+      phone,
+      licenseNumber,
+      vehicleType,
+      plateNumber,
+    } = req.body;
 
-    // 1. Création/Mise à jour de l'utilisateur avec son téléphone
-    // On part du principe que l'utilisateur peut déjà exister
+    if (!userId) {
+      return res.status(400).json({ error: "userId requis" });
+    }
+
+    // 1. update user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { 
-        phone: phone,
-        name: name 
-      }
+      data: {
+        name,
+        phone,
+      },
     });
 
-    // 2. Création du profil Chauffeur
+    // 2. create driver profile
     const newDriver = await prisma.driver.create({
       data: {
         userId: updatedUser.id,
-        licenseNumber: licenseNumber,
-        vehicleType: vehicleType,
-        plateNumber: plateNumber,
-        status: 'PENDING' // Défini par ton énumération DriverStatus
-      }
+        licenseNumber,
+        vehicleType,
+        plateNumber,
+        status: "PENDING",
+      },
     });
 
     return res.status(201).json({
-      message: "Demande d'inscription chauffeur reçue",
-      data: newDriver
+      message: "Demande d'inscription chauffeur envoyée",
+      data: newDriver,
     });
-
   } catch (error: any) {
-    
-    if (error.code === 'P2002') {
-      return res.status(400).json({ error: "Le numéro de permis ou la plaque existe déjà." });
+    if (error.code === "P2002") {
+      return res.status(400).json({
+        error: "Doublon détecté (permis ou plaque déjà utilisée)",
+      });
     }
-    return res.status(500).json({ error: "Erreur lors de l'inscription." });
+
+    return res.status(500).json({
+      error: "Erreur lors de l'inscription chauffeur",
+    });
   }
 };
 
+/**
+ * 📱 SCAN CHAUFFEUR (QR CODE)
+ */
 export const scanDriver = async (req: Request, res: Response) => {
   try {
-    // On force le type en string pour lever l'ambiguïté
-    const id = req.params.id as string; 
+    const id = req.params.id;
 
     if (!id) {
       return res.status(400).json({ error: "ID invalide" });
     }
 
     const driverData = await driverService.getDriverForScan(id);
+
     return res.status(200).json(driverData);
   } catch (error: any) {
-    return res.status(404).json({ error: error.message });
+    return res.status(404).json({
+      error: error.message || "Chauffeur introuvable",
+    });
   }
 };
